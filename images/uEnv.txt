@@ -1,0 +1,11 @@
+ipaddr=192.168.7.2
+serverip=192.168.7.1
+
+console=ttyS0,115200n8
+rootfs_mount_point=/dev/mmcblk0p2
+
+load_from_sd=echo Booting from microSD...; load mmc 0:2 ${loadaddr} /boot/uImage; load mmc 0:2 ${fdtaddr} /boot/am335x-boneblack.dtb
+
+linux_boot_arguments=setenv bootargs console=${console} root=${rootfs_mount_point} rw rootwait
+
+bootcmd=run load_from_sd; run linux_boot_arguments; run bootm ${loadaddr} - {fdtaddr}
