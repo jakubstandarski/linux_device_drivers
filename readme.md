@@ -13,6 +13,10 @@
     - [Init Function](#init-function)
     - [Exit Function](#exit-function)
     - [Error Handling During Init](#error-handling-during-init)
+- [Char Drivers](#char-drivers)
+    - [Major And Minor Numbers](#major-and-minor-numbers)
+    - [Device Numbers Allocation](#device-numbers-allocation)
+    - [Device Number Cleanup](#device-numbers-cleanup)
 
 
 
@@ -186,4 +190,91 @@ itself if any errors occur.
 
 **Remember that exit (cleanup) function can't be prepended with `__exit`
 token then.**
+
+
+
+## Char Drivers
+
+A character (char) device is one that can be accessed as a stream of bytes
+(like a file) and the char driver is in charge of implementing this behavior.
+It implements system calls like `open`, `close`, `read`, `write` and more
+depending on requirements.
+
+Char devices are acessed through names in the filesystem, called:
+- special files;
+- device files;
+- nodes of the filesystem tree.
+
+Special files for char devices are located in the `/dev/` directory and are
+identified by a `c` in the first column of the output of `ls -l` command, e.g.
+```
+crw-rw-rw-  1 root  tty     4,  64 Jul 4  1998 ttyS0
+```
+
+
+### Major And Minor Numbers
+
+If you issue `ls -l /dev/` command, you will see many strings like this one:
+```
+crw-rw-rw-  1 root  tty     4,  64 Jul 4  1998 ttyS0
+```
+Such a string includes two numbers (separated by a comma) before the date of
+the last modification (for most of other files, this place is occupied by the
+file length information).
+
+These numbers are the `major` and `minor` device number for the particular
+device (in this case `major` is `4` and `minor` is `64`).
+
+`Major` number identifies the driver associated with the device (in the above
+mentioned case ttyS0 is managed by driver 4).
+
+`Minor` number is used by the kernel to determine exactly which device is being
+referred to. The kernel itself knows almost nothing about minor numbers beyond
+the fact that they refer to device implemented by your driver.
+
+`dev_t` type (defined in `<linux/types.h>`) is used to hold device numbers
+(both the major and minor parts).
+To obtain the major or minor parts of a `dev_t`, use (defined in
+`<linux/kdev_t.h>`):
+```c
+MAJOR(dev_t dev);
+MINOR(dev_t dev);
+```
+
+
+### Device Numbers Allocation
+
+The first thing which should be done by your driver is to obtain device
+numbers. There are two functions necessary for this task (declared in
+`<linux/fs.h>`).
+
+If you know ahead of time exactly which device numbers you want, then use:
+```c
+int register_chrdev_region(dev_t first, unsgined int count, char *name);
+```
+
+However, probably you will not know which major numbers your device will use,
+so you should use:
+```c
+int alloc_chrdev_region(dev_t *dev, unsigned int firstminor,
+    unsigned int count, char *name);
+```
+- `dev` is an output-only parameter that will hold the first number in your
+allocated range.
+
+- `firstminor` should be the first minor number to use (usually 0).
+
+- `count` is the total number of contiguous device numbers you are requesting.
+
+- `name` is the name fo the device that should be associated with this number
+range (it will appear in `/proc/devices` file and sysfs).
+
+
+### Device Numbers Cleanup
+
+If allocated device numbers are no longer required (due to some init error or
+module removal) they should be freed with:
+```c
+void unregister_chrdev_region(dev_t first, unsgined int count);
+```
 
