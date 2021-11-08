@@ -17,6 +17,10 @@
     - [Major And Minor Numbers](#major-and-minor-numbers)
     - [Device Numbers Allocation](#device-numbers-allocation)
     - [Device Number Cleanup](#device-numbers-cleanup)
+- [Important Data Structures](#important-data-structures)
+    - [File Operations](#file-operations)
+    - [File](#file)
+    - [Inode](#inode)
 
 
 
@@ -276,5 +280,68 @@ If allocated device numbers are no longer required (due to some init error or
 module removal) they should be freed with:
 ```c
 void unregister_chrdev_region(dev_t first, unsgined int count);
+```
+
+
+
+## Important Data Structures
+
+
+### File Operations
+
+`struct file_operations` (defined in `<linux/fs.h>`) sets up connection
+between device numbers and driver's operations. It is a collection of function
+pointers. Each open file is associated with its own set of functions
+(`file` structure includes `f_op` field that points to a `file_operations`
+structure). Those driver's operations are mostly system calls, e.g. `open`,
+`read`, `write` and so on.
+
+The very basic set of file operations for random char device may look like
+this:
+```c
+struct file_operations my_device_fops = {
+    .owner = THIS_MODULE,
+    .llseek = my_device_llseek,
+    .read = my_device_read,
+    .write = my_device_write,
+    .ioctl = my_device_ioctl,
+    .open = my_device_open,
+    .release = my_device_release
+};
+```
+
+
+### File
+
+`struct file` (defined in `<linux/fs.h>`) is the second most important data
+structure used in device drivers.
+It represents an open file descriptor (it is not specific to device drivers;
+every open file in the system has an associated `struct file` in kernel space).
+It is created by the kernel on `open` and is passed to any function that
+operates on the file. After all instances of the file are closed, the kernel
+releases the data structure.
+
+It is worth mentioning, that drivers never create `file` structures, they only
+access structures created elsewhere.
+
+
+### Inode
+
+`struct inode` is used by the kernel internally to represent files, but it is
+not the same as `struct file` - there can be numerous `file` structures
+representing multiple open descriptors on a single file, but they all point to
+a single `inode` structure.
+
+`inode` structure provides great deal of information about the file, but in
+case of device driver code only a few fields are worth of interest:
+- `dev_t i_rdev` - actual device number;
+- `struct cdev *i_cdev` - kernel's internal structure that represents char
+devices.
+
+Due to the fact that kernel changes "from time to time", a good practice is to
+use predefined macros to obtain the major and minor number from an inode:
+```c
+unsigned int iminor(struct inode *inode);
+unsigned int imajor(struct inode *inode);
 ```
 
