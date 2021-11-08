@@ -17,6 +17,8 @@
     - [Major And Minor Numbers](#major-and-minor-numbers)
     - [Device Numbers Allocation](#device-numbers-allocation)
     - [Device Numbers Cleanup](#device-numbers-cleanup)
+    - [Char Device Registration](#char-device-registration)
+    - [Char Device Removal](#char-device-removal)
 - [Important Data Structures](#important-data-structures)
     - [File Operations](#file-operations)
     - [File](#file)
@@ -280,6 +282,40 @@ If allocated device numbers are no longer required (due to some init error or
 module removal) they should be freed with:
 ```c
 void unregister_chrdev_region(dev_t first, unsgined int count);
+```
+
+
+### Char Device Registration
+
+To represent char devices, the kernel uses structures of type `struct cdev`
+(defined in `<linux/cdev.h>`).
+
+To initialize `cdev` structure, you should call:
+```c
+void cdev_init(struct cdev *cdev, struct file_operations *fops);
+```
+Regardless of calling that function you have to initialize one `struct cdev`
+field manually, i.e. `cdev.owner` field with `THIS_MODULE`.
+
+Once the `cdev` structure is set up, the final step is to tell the kernel about
+it:
+```c
+int cdev_add(struct cdev *cdev, dev_t num, unsigned int count);
+```
+Where:
+- `dev` is the `cdev` structure.
+
+- `num` is the first device number to which this device responds.
+
+- `count` is the number of device numbers that should be associated with the
+device (often set to `1`).
+
+
+### Char Device Removal
+
+To remove a char device from the system, simply call:
+```c
+void cdev_del(struct cdev *dev);
 ```
 
 
