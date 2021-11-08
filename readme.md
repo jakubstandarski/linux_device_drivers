@@ -16,7 +16,7 @@
 - [Char Drivers](#char-drivers)
     - [Major And Minor Numbers](#major-and-minor-numbers)
     - [Device Numbers Allocation](#device-numbers-allocation)
-    - [Device Number Cleanup](#device-numbers-cleanup)
+    - [Device Numbers Cleanup](#device-numbers-cleanup)
 - [Important Data Structures](#important-data-structures)
     - [File Operations](#file-operations)
     - [File](#file)
