@@ -1,0 +1,17 @@
+console=ttyO0,115200n8
+rootfs_mount_point=/dev/mmcblk0p2
+boot_settings=setenv bootargs console=${console} root=${rootfs_mount_point} rw rootwait
+
+overlay_files=am335x-boneblack-overlay.dtbo
+overlay_path=/lib/firmware
+configure_fdt_environment=setenv fdtaddr 0x87f00000; setenv fdtovaddr 0x87fc0000
+load_base_blob=load mmc 0:2 ${fdtaddr} /boot/am335x-boneblack.dtb
+configure_fdt=fdt addr ${fdtaddr}; fdt resize 8192
+load_overlays=for file in ${overlay_files}; do load mmc 0:2 ${fdtovaddr} ${overlay_path}/${file}; fdt apply ${fdtovaddr}; done
+setup_fdt=echo Setting up FDT run configure_fdt_environment; run load_base_blob; run configure_fdt; run load_overlays
+
+load_kernel=load mmc 0:2 ${loadaddr} /boot/uImage
+
+sd_boot=echo Booting from microSD...; setenv autoload no; run load_kernel; run setup_fdt; run boot_settings ; bootm ${loadaddr} - ${fdtaddr}
+
+uenvcmd=run sd_boot

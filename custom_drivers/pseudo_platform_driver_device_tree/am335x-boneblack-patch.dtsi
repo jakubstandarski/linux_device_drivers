@@ -1,0 +1,13 @@
+/ {
+    ppd0: pseudo-platform-device-0 {
+        compatible = "ppd0";
+        organization-name,comms-baudrate = <115200>;
+        organization-name,serial-number = "ppdxyz0";
+    };
+
+    ppd1: pseudo-platform-device-1 {
+        compatible = "ppd1";
+        organization-name,comms-baudrate = <19200>;
+        organization-name,serial-number = "ppdxyz1";
+    };
+};
