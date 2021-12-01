@@ -23,6 +23,8 @@
     - [File Operations](#file-operations)
     - [File](#file)
     - [Inode](#inode)
+- [Devicetree](#devicetree)
+    - [How To Compile Devicetree Overlay](#how-to-compile-devicetree-overlay)
 
 
 
@@ -380,4 +382,79 @@ use predefined macros to obtain the major and minor number from an inode:
 unsigned int iminor(struct inode *inode);
 unsigned int imajor(struct inode *inode);
 ```
+
+
+
+## Devicetree
+
+
+### How To Compile Devicetree Overlay
+
+To compile devicetree overlay against given Linux source, you may use either
+`device-tree-compiler (dtc)` by yourself or copy the overlay file to the
+Linux source directory and edit respective `Makefile` to perform compilation.
+
+Using `device-tree-compiler (dtc)` by yourself is very simple, but it may get
+problematic while trying to use it against respective Linux source, anyway
+to compile devicetree overlay simply run the following command:
+```sh
+$ dtc -@ -I dts -O dtb -o overlay_name.dtbo overlay_name.dts
+```
+
+The second approach requires a bit more work, but it's not hard at all.
+Follow these steps to perfom whole process correctly:
+
+1. Copy your devicetree overlay source file (e.g. `overlay_name.dts`) to the
+respective directory under Linux source, (e.g.
+`beaglebone_linux/arch/arm/boot/dts/overlays`).
+
+2. Edit `Makefile` inside above mentioned directory to create
+`overlay_name.dtbo`, e.g. this is the part of the `Makefile` from Beaglebone
+Linux source directory under `arch/arm/boot/dts/overlays`:
+```sh
+# Overlays for the BeagleBone platform
+
+dtbo-$(CONFIG_ARCH_OMAP2PLUS) += \
+	BB-ADC-00A0.dtbo	\
+	BB-BBBW-WL1835-00A0.dtbo	\
+	BB-BBGG-WL1835-00A0.dtbo	\
+	BB-BBGW-WL1835-00A0.dtbo	\
+	BB-BONE-4D5R-01-00A1.dtbo	\
+	BB-BONE-eMMC1-01-00A0.dtbo	\
+	BB-BONE-LCD4-01-00A1.dtbo	\
+	BB-BONE-NH7C-01-A0.dtbo	\
+	BB-CAPE-DISP-CT4-00A0.dtbo	\
+	BB-HDMI-TDA998x-00A0.dtbo	\
+	BB-SPIDEV0-00A0.dtbo	\
+	BB-SPIDEV1-00A0.dtbo	\
+	BBORG_COMMS-00A2.dtbo	\
+	BBORG_FAN-A000.dtbo	\
+	BBORG_RELAY-00A2.dtbo	\
+	BONE-ADC.dtbo	\
+	M-BB-BBG-00A0.dtbo	\
+	M-BB-BBGG-00A0.dtbo	\
+	PB-HACKADAY-2021.dtbo \
+	overlay_name.dtbo
+
+targets += dtbs dtbs_install
+targets += $(dtbo-y)
+
+always-y	:= $(dtbo-y)
+clean-files	:= *.dtbo
+```
+Take a look at that `Makefile`, it adds `overlay_name.dtbo` file to be
+generated while compiling all other devicetree files.
+
+3. After copying your `overlay_name.dts` file and updating `Makefile`, it's
+time to call compiler (in this case cross compiler) to generate
+`overlay_name.dtbo` file.
+From the Linux source directory invoke the following command:
+```sh
+$ make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabihf- dtbs
+```
+That's all, you may find your `overlay_name.dtbo` file under
+`arch/arm/boot/dts/overlays`.
+
+**Note** that `ARCH` and `CROSS_COMPILE` may be different depending on your device
+architecture and respective cross compiler.
 
