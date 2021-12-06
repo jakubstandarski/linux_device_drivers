@@ -1,0 +1,41 @@
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/am33xx.h>
+#include <dt-bindings/pinctrl/omap.h>
+
+/ {
+    fragment@0 {
+        target = <&am33xx_pinmux>;
+        __overlay__ {
+            led_ext_pins: led_ext_pins {
+                pinctrl-single,pins = <
+                    AM33XX_PADCONF(AM335X_PIN_GPMC_AD14, PIN_OUTPUT, MUX_MODE7)
+                    AM33XX_PADCONF(AM335X_PIN_GPMC_CLK, PIN_OUTPUT, MUX_MODE7)
+                >;
+            };
+        };
+    };
+
+    fragment@1 {
+        target-path = "/";
+        __overlay__ {
+            led_ext: led_ext {
+                compatible = "jstand,led_ext";
+                pinctrl-single,names = "default";
+                pinctrl-0 = <&led_ext_pins>;
+
+                led_ext_red: led_ext_red {
+                    label = "led_ext_red";
+                    state-gpios = <&gpio1 14 GPIO_ACTIVE_HIGH>;
+                };
+
+                led_ext_blue: led_ext_blue {
+                    label = "led_ext_blue";
+                    state-gpios = <&gpio2 1 GPIO_ACTIVE_HIGH>;
+                };
+            };
+        };
+    };
+};
