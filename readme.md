@@ -25,6 +25,8 @@
     - [Inode](#inode)
 - [Devicetree](#devicetree)
     - [How To Compile Devicetree Overlay](#how-to-compile-devicetree-overlay)
+- [Concurrency And Race Conditions](#concurrency-and-race-conditions)
+    - [Mutex Vs Spinlock](#mutex-vs-spinlock)
 
 
 
@@ -457,4 +459,18 @@ That's all, you may find your `overlay_name.dtbo` file under
 
 **Note** that `ARCH` and `CROSS_COMPILE` may be different depending on your device
 architecture and respective cross compiler.
+
+
+
+## Concurrency And Race Conditions
+
+
+### Mutex Vs Spinlock
+
+Use `mutex` if:
+- critical section is in "process/user context" and is atomic;
+- critical section is in "process/user context" and may sleep holding the lock.
+
+Use `spinlock` if:
+- critical section is in "interrupt context" (which means it cannot sleep).
 
