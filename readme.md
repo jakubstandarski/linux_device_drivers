@@ -24,6 +24,7 @@
     - [File](#file)
     - [Inode](#inode)
 - [Devicetree](#devicetree)
+    - [Devicetree Inheritance](#devicetree-inheritance)
     - [How To Compile Devicetree Overlay](#how-to-compile-devicetree-overlay)
 - [Concurrency And Race Conditions](#concurrency-and-race-conditions)
     - [Mutex Vs Spinlock](#mutex-vs-spinlock)
@@ -388,6 +389,22 @@ unsigned int imajor(struct inode *inode);
 
 
 ## Devicetree
+
+
+### Devicetree Inheritance
+
+Devicetree files are not monolithic, which means they can be split into several
+files.
+
+`.dts` file is the final Devicetree, it contains the board-level information,
+e.g. for BeagleBone Black there is `am335x-boneblack.dts` file, which includes
+a few `.dtsi` files.
+
+`.dtsi` file is the included file, which typically contains definition of
+SoC level information or other information common for similar boards, e.g.
+information about AM33XX SoC is included inside `am33xx.dtsi` and
+`am33xx-l4.dtsi` files.
+
 
 
 ### How To Compile Devicetree Overlay
