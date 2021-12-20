@@ -24,8 +24,10 @@
     - [File](#file)
     - [Inode](#inode)
 - [Devicetree](#devicetree)
+    - [What Is a Devicetree](#what-is-a-devicetree)
     - [Devicetree Inheritance](#devicetree-inheritance)
     - [How To Compile Devicetree Overlay](#how-to-compile-devicetree-overlay)
+    - [Address And Size Cells Concept](#address-and-size-cells-concept)
 - [Concurrency And Race Conditions](#concurrency-and-race-conditions)
     - [Mutex Vs Spinlock](#mutex-vs-spinlock)
 
@@ -391,6 +393,14 @@ unsigned int imajor(struct inode *inode);
 ## Devicetree
 
 
+### What Is a Devicetree
+
+`Devicetree` is a data structure describing the hardware components of a
+particular computer/board so that the operating system's kernel (e.g. Linux
+kernel) can use and manage those components, including CPU (or CPUs),
+the memory, the buses, and the peripherals.
+
+
 ### Devicetree Inheritance
 
 Devicetree files are not monolithic, which means they can be split into several
@@ -404,7 +414,6 @@ a few `.dtsi` files.
 SoC level information or other information common for similar boards, e.g.
 information about AM33XX SoC is included inside `am33xx.dtsi` and
 `am33xx-l4.dtsi` files.
-
 
 
 ### How To Compile Devicetree Overlay
@@ -476,6 +485,33 @@ That's all, you may find your `overlay_name.dtbo` file under
 
 **Note** that `ARCH` and `CROSS_COMPILE` may be different depending on your device
 architecture and respective cross compiler.
+
+
+### Address And Size Cells Concept
+
+`Cell` is a different word for integer values represented as 32-bit integers.
+
+`#address-cells` and `#size-cells` describes how many cells are used in
+sub-nodes (child nodes) to encode the address and size in the `reg` property,
+e.g.
+```sh
+soc {
+    compatible = "simple-bus";
+    #address-cells = <1>;
+    #size-cells <1>;
+
+    i2c0: i2c@f1001000 {
+        compatible = "ti,omap2-i2c";
+        reg = <0xf1001000 0x1000>;
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        eeprom_ext: eeprom@52 {
+            reg = <0x52>;
+        };
+    };
+};
+```
 
 
 
