@@ -28,6 +28,7 @@
     - [Devicetree Inheritance](#devicetree-inheritance)
     - [How To Compile Devicetree Overlay](#how-to-compile-devicetree-overlay)
     - [Address And Size Cells Concept](#address-and-size-cells-concept)
+    - [Interrupt Handling](#interrupt-handling)
 - [Concurrency And Race Conditions](#concurrency-and-race-conditions)
     - [Mutex Vs Spinlock](#mutex-vs-spinlock)
 
@@ -509,6 +510,39 @@ soc {
         eeprom_ext: eeprom@52 {
             reg = <0x52>;
         };
+    };
+};
+```
+
+
+### Interrupt Handling
+
+`interrupt-controller` is a boolean property indicating that the current node
+is an interrupt controller, e.g. (from `armv7-m.dtsi`):
+```sh
+/ {
+    nvic: interrupt-controller@e000e100 {
+        compatible = "arm,armv7m-nvic";
+        interrupt-controller;
+        #interrupt-cells = <1>;
+        reg = <0xe000e100 0xc00>;
+    };
+};
+```
+
+`#interrupt-cells` indicates the number of cells in the `interrupts` property
+for the interrupts managed by the selected interrupt controller.
+
+`interrupt-parent` is a **phandle** pointing to the interrupt controller for
+the current node, e.g. (from `armv7-m.dtsi`):
+```sh
+/ {
+    soc {
+        #address-cells = <1>;
+        #size-cells = <1>;
+        compatible = "simple-bus";
+        interrupt-parent = <&nvic>;
+        ranges;
     };
 };
 ```
